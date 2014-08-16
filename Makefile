@@ -31,7 +31,19 @@ BOARD = KL25Z
 include Platforms
 
 # path to the mbed library
-MBED_DIR = mbed
+MBED_PATH = .
+
+#Eabled/Disable mbed libraries
+USE_DSP  = false
+USE_FAT  = false
+USE_RTOS = false
+USE_USB  = false
+
+# app headers directories
+INC_DIRS = include
+
+# app source directories
+SRC_DIRS = src
 
 # toolchain specific
 TOOLCHAIN = arm-none-eabi-
@@ -43,41 +55,80 @@ OBJCP = $(TOOLCHAIN)objcopy
 AR = $(TOOLCHAIN)ar
 
 # application specific
-INSTRUCTION_MODE = thumb
 TARGET = mbed
+INSTRUCTION_MODE = thumb
 TARGET_EXT = elf
-LD_SCRIPT = $(MBED_DIR)/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/$(LINKER_NAME).ld
 
+LD_SCRIPT = $(MBED_PATH)/mbed/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/$(LINKER_NAME).ld
 CC_SYMBOLS = -D$(TARGET_BOARD) -DTOOLCHAIN_GCC_ARM -DNDEBUG
 
-LIB_DIRS = $(MBED_DIR)/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM
-LIBS = -lmbed -lstdc++ -lsupc++ -lm -lgcc -lc -lnosys
+LIB_DIRS = $(MBED_PATH)/mbed/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM
+LIBS = -lmbed
 
-MBED_OBJ = $(MBED_DIR)/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/cmsis_nvic.o
-MBED_OBJ += $(MBED_DIR)/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/$(STARTUP_NAME).o
-MBED_OBJ += $(MBED_DIR)/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/retarget.o
-MBED_OBJ += $(MBED_DIR)/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/$(SYSTEM_NAME).o
-MBED_OBJ += $(MBED_DIR)/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/board.o
-ifneq ("$(wildcard $(MBED_DIR)/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/mbed_overrides.o)","")
-	MBED_OBJ += $(MBED_DIR)/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/mbed_overrides.o
+ifeq ($(USE_DSP), true)
+	LIBS += -ldsp -lcmsis_dsp
+	LIB_DIRS += $(MBED_PATH)/dsp/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM
 endif
 
-# directories
-INC_DIRS = $(MBED_DIR) $(MBED_DIR)/$(TARGET_BOARD) $(MBED_DIR)/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM
-INC_DIRS += $(MBED_DIR)/$(TARGET_BOARD)/$(TARGET_VENDOR)/$(TARGET_FAMILY)
-INC_DIRS += $(MBED_DIR)/$(TARGET_BOARD)/$(TARGET_VENDOR)/$(TARGET_FAMILY)/$(TARGET_SPECIFIC)
-# app headers directories (remove comment and add more files)
-#INC_DIRS +=
+ifeq ($(USE_FAT), true)
+	LIBS += -lfat
+	LIB_DIRS += $(MBED_PATH)/fat/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM
+endif
 
-SRC_DIRS = $(MBED_DIR) $(MBED_DIR)/$(TARGET_BOARD) $(MBED_DIR)/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM .
-SRC_DIRS += $(MBED_DIR)/$(TARGET_BOARD)/$(TARGET_VENDOR)/$(TARGET_FAMILY)
-SRC_DIRS += $(MBED_DIR)/$(TARGET_BOARD)/$(TARGET_VENDOR)/$(TARGET_FAMILY)/$(TARGET_SPECIFIC)
-# app source directories (remove comment and add more files)
-#SRC_DIRS +=
+ifeq ($(USE_RTOS), true)
+	LIBS += -lrtos -lrtx
+	LIB_DIRS += $(MBED_PATH)/rtos/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM
+endif
+
+ifeq ($(USE_USB), true)
+	LIBS += -lUSBDevice
+	LIB_DIRS += $(MBED_PATH)/usb/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM
+endif
+
+LIBS += -lstdc++ -lsupc++ -lm -lgcc -lc -lnosys
+
+MBED_OBJ = $(MBED_PATH)/mbed/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/cmsis_nvic.o
+MBED_OBJ += $(MBED_PATH)/mbed/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/$(STARTUP_NAME).o
+MBED_OBJ += $(MBED_PATH)/mbed/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/retarget.o
+MBED_OBJ += $(MBED_PATH)/mbed/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/$(SYSTEM_NAME).o
+MBED_OBJ += $(MBED_PATH)/mbed/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/board.o
+
+ifneq ("$(wildcard $(MBED_PATH)/mbed/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/mbed_overrides.o)","")
+	MBED_OBJ += $(MBED_PATH)/mbed/$(TARGET_BOARD)/TOOLCHAIN_GCC_ARM/mbed_overrides.o
+endif
+
+# MBED directories
+INC_DIRS = $(MBED_PATH)/mbed
+INC_DIRS += $(MBED_PATH)/mbed/$(TARGET_BOARD)
+INC_DIRS += $(MBED_PATH)/mbed/$(TARGET_BOARD)/$(TARGET_VENDOR)/$(TARGET_FAMILY)
+INC_DIRS += $(MBED_PATH)/mbed/$(TARGET_BOARD)/$(TARGET_VENDOR)/$(TARGET_FAMILY)/$(TARGET_SPECIFIC)
+
+ifeq ($(USE_DSP), true)
+	INC_DIRS += $(MBED_PATH)/dsp
+endif
+
+ifeq ($(USE_FAT), true)
+	INC_DIRS += $(MBED_PATH)/fat
+        INC_DIRS += $(MBED_PATH)/fat/ChaN
+endif
+
+ifeq ($(USE_RTOS), true)
+        INC_DIRS += $(MBED_PATH)/rtos
+endif
+
+ifeq ($(USE_USB), true)
+        INC_DIRS += $(MBED_PATH)/usb/USBAudio
+        INC_DIRS += $(MBED_PATH)/usb/USBDevice
+        INC_DIRS += $(MBED_PATH)/usb/USBHID
+        INC_DIRS += $(MBED_PATH)/usb/USBMIDI
+        INC_DIRS += $(MBED_PATH)/usb/USBMSD
+        INC_DIRS += $(MBED_PATH)/usb/USBSerial
+endif
 
 OUT_DIR = build
 
 INC_DIRS_F = -I. $(patsubst %, -I%, $(INC_DIRS))
+LIB_DIRS_F = $(patsubst %, -L%, $(LIB_DIRS))
 
 ifeq ($(strip $(OUT_DIR)), )
 	OBJ_FOLDER =
@@ -94,13 +145,11 @@ DEPEND_OPTS = -MF $(OBJ_FOLDER)$(@F:.o=.d)
 
 # Flags
 CFLAGS = $(COMPILER_OPTIONS) $(DEPEND_OPTS) $(INC_DIRS_F) -std=gnu99 -c
-
 CXXFLAGS = $(COMPILER_OPTIONS) $(DEPEND_OPTS) $(INC_DIRS_F) -std=gnu++98 -c
-
 ASFLAGS = $(COMPILER_OPTIONS) $(INC_DIRS_F) -c
 
 # Linker options
-LD_OPTIONS = -mcpu=$(CPU) -m$(INSTRUCTION_MODE) -Os -L $(LIB_DIRS) -T $(LD_SCRIPT) $(INC_DIRS_F)
+LD_OPTIONS = -mcpu=$(CPU) -m$(INSTRUCTION_MODE) -Os $(LIB_DIRS_F) -T $(LD_SCRIPT) $(INC_DIRS_F)
 LD_OPTIONS += -specs=nano.specs
 #use this if %f is used, by default it's commented
 #LD_OPTIONS += -u _printf_float -u _scanf_float
