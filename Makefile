@@ -228,4 +228,12 @@ print_info:
 	arm-none-eabi-nm $(OBJ_FOLDER)$(TARGET).$(TARGET_EXT) > $(OBJ_FOLDER)$(TARGET)-symbol-table.txt
 	@echo ' '
 
-.PHONY: all clean print_info
+check-syntax: check-syntax-c check-syntax-cpp
+
+check-syntax-c:
+	$(CC) $(CFLAGS) -o nul -S $(CHK_SOURCES)
+
+check-syntax-cpp:
+	$(CXX) $(CXXFLAGS) -o nul -S $(CHK_SOURCES)
+
+.PHONY: all clean print_info check-syntax
