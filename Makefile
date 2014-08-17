@@ -231,9 +231,9 @@ print_info:
 check-syntax: check-syntax-c check-syntax-cpp
 
 check-syntax-c:
-	$(CC) $(CFLAGS) -o nul -S $(CHK_SOURCES)
+	$(CC) $(CFLAGS) -o /dev/null -S $(CHK_SOURCES)
 
 check-syntax-cpp:
-	$(CXX) $(CXXFLAGS) -o nul -S $(CHK_SOURCES)
+	$(CXX) $(CXXFLAGS) -o /dev/null -S $(CHK_SOURCES)
 
 .PHONY: all clean print_info check-syntax
