@@ -200,7 +200,7 @@ $(OBJ_FOLDER)%.o : %.s
 	@echo 'Finished building: $(@F)'
 	@echo ' '
 
-all: create_outputdir $(OBJ_FOLDER)$(TARGET).$(TARGET_EXT) print_info
+all: create_outputdir $(OBJ_FOLDER)$(TARGET).$(TARGET_EXT) print_info post_build_check
 
 create_outputdir:
 	$(shell mkdir $(OBJ_FOLDER) 2>/dev/null)
@@ -211,6 +211,9 @@ $(OBJ_FOLDER)$(TARGET).$(TARGET_EXT): $(LD_SCRIPT) $(C_OBJS) $(CPP_OBJS) $(S_OBJ
 	@echo 'Invoking: MCU Linker'
 	$(LD) $(LD_OPTIONS) $(CPP_OBJS) $(C_OBJS) $(S_OBJS) $(MBED_OBJ) $(LIBS) -o $(OBJ_FOLDER)$(TARGET).$(TARGET_EXT)
 	@echo 'Finished building target: $@'
+ifeq ($(TARGET_POST_CHECK))
+		@echo 'TODO: Post check'
+endif
 	@echo ' '
 
 # Other Targets
@@ -226,7 +229,9 @@ print_info:
 	arm-none-eabi-objcopy -O binary -v $(OBJ_FOLDER)$(TARGET).$(TARGET_EXT) $(OBJ_FOLDER)$(TARGET).bin
 	arm-none-eabi-objdump -D $(OBJ_FOLDER)$(TARGET).$(TARGET_EXT) > $(OBJ_FOLDER)$(TARGET).lst
 	arm-none-eabi-nm $(OBJ_FOLDER)$(TARGET).$(TARGET_EXT) > $(OBJ_FOLDER)$(TARGET)-symbol-table.txt
-	@echo ' '
+
+post_build_check:
+	$(TARGET_POST_BUILD_CHECK) $(OBJ_FOLDER)$(TARGET).bin
 
 check-syntax: check-syntax-c check-syntax-cpp
 
