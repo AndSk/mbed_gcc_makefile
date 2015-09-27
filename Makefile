@@ -211,9 +211,6 @@ $(OBJ_FOLDER)$(TARGET).$(TARGET_EXT): $(LD_SCRIPT) $(C_OBJS) $(CPP_OBJS) $(S_OBJ
 	@echo 'Invoking: MCU Linker'
 	$(LD) $(LD_OPTIONS) $(CPP_OBJS) $(C_OBJS) $(S_OBJS) $(MBED_OBJ) $(LIBS) -o $(OBJ_FOLDER)$(TARGET).$(TARGET_EXT)
 	@echo 'Finished building target: $@'
-ifeq ($(TARGET_POST_CHECK))
-		@echo 'TODO: Post check'
-endif
 	@echo ' '
 
 # Other Targets
